@@ -1,0 +1,51 @@
+package fr.eni.projet.encheres.bll;
+
+import org.springframework.stereotype.Service;
+
+import fr.eni.projet.encheres.bo.ArticleVendu;
+import fr.eni.projet.encheres.bo.Enchere;
+import fr.eni.projet.encheres.bo.Utilisateur;
+import fr.eni.projet.encheres.dal.ArticleVenduDAO;
+import fr.eni.projet.encheres.dal.EnchereDAO;
+import fr.eni.projet.encheres.exception.BusinessException;
+
+@Service
+public class EnchereServiceImpl implements EnchereService {
+	public EnchereDAO enchereDAO;
+	public ArticleVenduDAO articleVenduDAO;
+
+	public EnchereServiceImpl(EnchereDAO enchereDAO, ArticleVenduDAO articleVenduDAO) {
+		this.enchereDAO = enchereDAO;
+		this.articleVenduDAO = articleVenduDAO;
+	}
+
+	@Override
+	public void creerEnchere(Enchere enchere) throws BusinessException {		
+		ArticleVendu article = articleVenduDAO.read(enchere.getArticleVenduConcerne().getNoArticle());
+		
+		if (!(enchere.getMontant_enchere() <= article.getPrixVente())) {
+			article.setPrixVente(enchere.getMontant_enchere());
+			
+			articleVenduDAO.update(article);
+			enchereDAO.create(enchere);
+		}
+		
+		System.out.println("utilisateurVend = " + article.getUtilisateurVend());
+		System.out.println("utilisateurAchete = " + article.getUtilisateurAchete());	
+		
+//		if (article.getPrixVente() == 0) {
+//			enchere.setMontant_enchere(article.getMiseAPrix());
+//			article.setPrixVente(enchere.getMontant_enchere());
+//		} else {
+//			enchere.setMontant_enchere(article.getPrixVente() + 1);
+//			article.setPrixVente(enchere.getMontant_enchere());
+//		}
+
+	}
+
+	@Override
+	public Utilisateur trouverEnchere(int no_article, int prixVente) {
+		return enchereDAO.read(no_article, prixVente);
+	}
+
+}
